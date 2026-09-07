@@ -163,13 +163,20 @@ def mensajes_pendientes(access_token):
 
 
 def abrir_recordatorio(subject, body, weblink, remitente):
-    params = urllib.parse.urlencode({
+    # quote (no urlencode/quote_plus): el decodificador en AppleScript espera
+    # %20 para los espacios, igual que encodeURIComponent en JS — quote_plus
+    # los codificaría como "+", indistinguible de un "+" literal del texto.
+    campos = {
         "titulo": subject,
         "asunto": subject,
         "cuerpo": body,
         "enlace": weblink,
         "remitente": remitente,
-    })
+    }
+    params = "&".join(
+        f"{clave}={urllib.parse.quote(valor, safe='')}"
+        for clave, valor in campos.items()
+    )
     url = "recordatoriooutlook://crear?" + params
     subprocess.Popen(["open", url])
 
