@@ -207,8 +207,13 @@ def bucle(config):
     while True:
         try:
             access_token = token_de_acceso(config)
-            for mensaje in mensajes_pendientes(access_token):
-                procesar(access_token, mensaje)
+            pendientes = mensajes_pendientes(access_token)
+            # Como mucho uno por ronda: si se lanzan dos "open" seguidos
+            # mientras la app todavía está mostrando el diálogo del primero,
+            # el segundo evento se puede perder. Procesando solo uno cada
+            # INTERVALO_SEGUNDOS, la app siempre tiene tiempo de sobra.
+            if pendientes:
+                procesar(access_token, pendientes[0])
         except Exception as e:
             print(f"[poller] error en la ronda de sondeo: {e}", file=sys.stderr)
         time.sleep(INTERVALO_SEGUNDOS)
