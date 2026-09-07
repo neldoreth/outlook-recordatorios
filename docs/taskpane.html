@@ -69,21 +69,11 @@
   </div>
 
   <script>
-    var payloadUrl = "";
-
-    function intentarAbrir(url) {
-      // El WebView de Outlook bloquea la navegación in-place a esquemas
-      // personalizados, así que se prueban varios mecanismos por si alguno
-      // sí se delega al sistema operativo.
-      try {
-        var ventana = window.open(url, "_blank");
-        if (!ventana) {
-          window.location.href = url;
-        }
-      } catch (e) {
-        window.location.href = url;
-      }
-    }
+    // El WebView de Outlook bloquea la navegación a esquemas de URL
+    // personalizados (recordatoriooutlook://), tanto por location.href como
+    // por window.open. Un fetch normal sí funciona, así que los datos se
+    // envían a un pequeño servidor local que hace el salto por nosotros.
+    var PUENTE = "http://127.0.0.1:47850/crear?";
 
     Office.onReady(function () {
       var item = Office.context.mailbox.item;
@@ -127,18 +117,19 @@
           "&enlace=" + encodeURIComponent(link) +
           "&remitente=" + encodeURIComponent(remitente);
 
-        payloadUrl = "recordatoriooutlook://crear?" + params;
+        document.getElementById("enlaceManual").href = "recordatoriooutlook://crear?" + params;
+        estado.textContent = "Enviando al puente local…";
 
-        document.getElementById("enlaceManual").href = payloadUrl;
-        document.getElementById("manual").style.display = "block";
-        estado.textContent = "Abriendo Recordatorios…";
-
-        intentarAbrir(payloadUrl);
-
-        setTimeout(function () {
-          estado.textContent =
-            "Si no ha pasado nada, usa el enlace de abajo (solo la primera vez macOS puede pedir confirmación).";
-        }, 1200);
+        fetch(PUENTE + params, { mode: "no-cors", cache: "no-store" })
+          .then(function () {
+            estado.textContent = "Hecho — revisa el diálogo que ha abierto Recordatorios.";
+          })
+          .catch(function () {
+            estado.textContent =
+              "No se pudo contactar con el puente local (127.0.0.1:47850). " +
+              "¿Está instalado y en marcha? Ejecuta bridge/instalar.sh, o usa el enlace manual de abajo.";
+            document.getElementById("manual").style.display = "block";
+          });
       });
     }
   </script>
