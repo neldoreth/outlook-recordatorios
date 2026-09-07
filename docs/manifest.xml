@@ -7,7 +7,7 @@
     xsi:type="MailApp">
 
   <Id>36AB00A1-DAE7-4648-B507-5263C5C97C09</Id>
-  <Version>1.0.0.0</Version>
+  <Version>1.1.0.0</Version>
   <ProviderName>Oscar</ProviderName>
   <DefaultLocale>es-ES</DefaultLocale>
   <DisplayName DefaultValue="Recordatorio desde Outlook"/>
@@ -26,7 +26,7 @@
 
   <Requirements>
     <Sets>
-      <Set Name="Mailbox" MinVersion="1.5"/>
+      <Set Name="Mailbox" MinVersion="1.9"/>
     </Sets>
   </Requirements>
 
@@ -39,7 +39,7 @@
     </Form>
   </FormSettings>
 
-  <Permissions>ReadItem</Permissions>
+  <Permissions>ReadWriteItem</Permissions>
 
   <Rule xsi:type="RuleCollection" Mode="Or">
     <Rule xsi:type="ItemIs" ItemType="Message" FormType="Read"/>
@@ -49,7 +49,7 @@
 
   <VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides" xsi:type="VersionOverridesV1_0">
     <Requirements>
-      <bt:Sets DefaultMinVersion="1.5">
+      <bt:Sets DefaultMinVersion="1.9">
         <bt:Set Name="Mailbox"/>
       </bt:Sets>
     </Requirements>

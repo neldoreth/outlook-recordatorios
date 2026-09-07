@@ -46,14 +46,6 @@
       white-space: pre-wrap;
       word-break: break-word;
     }
-    #manual {
-      margin-top: 10px;
-      display: none;
-    }
-    #manual a {
-      font-size: 12px;
-      word-break: break-all;
-    }
   </style>
 </head>
 <body>
@@ -61,19 +53,15 @@
   <p class="subject" id="asunto">Cargando correo…</p>
   <button id="btnCrear" disabled>Crear recordatorio</button>
   <div id="estado"></div>
-  <div id="manual">
-    <p style="font-size:12px;">
-      Si no se ha abierto la app de Recordatorios automáticamente, pulsa aquí:
-    </p>
-    <a id="enlaceManual" href="#">Abrir en Recordatorios</a>
-  </div>
 
   <script>
-    // El WebView de Outlook bloquea la navegación a esquemas de URL
-    // personalizados (recordatoriooutlook://), tanto por location.href como
-    // por window.open. Un fetch normal sí funciona, así que los datos se
-    // envían a un pequeño servidor local que hace el salto por nosotros.
-    var PUENTE = "http://127.0.0.1:47850/crear?";
+    // El WebView del panel bloquea cualquier red directa: ni esquemas de URL
+    // personalizados ni conexiones a 127.0.0.1. Lo único que sí funciona sin
+    // restricciones son las llamadas a la propia API de Office.js, así que
+    // en vez de intentar llegar hasta el Mac desde aquí, solo se etiqueta el
+    // correo — un proceso en segundo plano en el Mac (poller/poller.py) es
+    // quien detecta la etiqueta vía Microsoft Graph y crea el recordatorio.
+    var CATEGORIA = "RecordatorioPendiente";
 
     Office.onReady(function () {
       var item = Office.context.mailbox.item;
@@ -84,52 +72,29 @@
 
     function crearRecordatorio() {
       var item = Office.context.mailbox.item;
-      var subject = item.subject || "";
-      var itemId = item.itemId || "";
       var estado = document.getElementById("estado");
-      estado.textContent = "Leyendo el correo…";
+      var boton = document.getElementById("btnCrear");
 
-      item.body.getAsync(Office.CoercionType.Text, function (result) {
-        var notes = "";
+      if (!Office.context.requirements.isSetSupported("Mailbox", "1.9")) {
+        estado.textContent =
+          "Tu versión de Outlook es demasiado antigua para esta función (requiere Mailbox 1.9+).";
+        return;
+      }
+
+      boton.disabled = true;
+      estado.textContent = "Etiquetando el correo…";
+
+      item.categories.addAsync([CATEGORIA], function (result) {
+        boton.disabled = false;
         if (result.status === Office.AsyncResultStatus.Succeeded) {
-          notes = result.value || "";
+          estado.textContent =
+            "Hecho. En unos segundos el proceso local creará el recordatorio " +
+            "(revisa Recordatorios en tu Mac).";
+        } else {
+          estado.textContent =
+            "No se pudo etiquetar el correo: " +
+            (result.error ? result.error.message : "error desconocido");
         }
-
-        var link = "";
-        if (itemId) {
-          link = "https://outlook.office.com/owa/?ItemID=" +
-                 encodeURIComponent(itemId) +
-                 "&exvsurl=1&viewmodel=ReadMessageItem";
-        }
-
-        var remitente = "";
-        try {
-          if (item.from && item.from.displayName) {
-            remitente = item.from.displayName +
-              (item.from.emailAddress ? " <" + item.from.emailAddress + ">" : "");
-          }
-        } catch (e) { /* no disponible en todos los tipos de item */ }
-
-        var params =
-          "titulo=" + encodeURIComponent(subject) +
-          "&asunto=" + encodeURIComponent(subject) +
-          "&cuerpo=" + encodeURIComponent(notes) +
-          "&enlace=" + encodeURIComponent(link) +
-          "&remitente=" + encodeURIComponent(remitente);
-
-        document.getElementById("enlaceManual").href = "recordatoriooutlook://crear?" + params;
-        estado.textContent = "Enviando al puente local…";
-
-        fetch(PUENTE + params, { mode: "no-cors", cache: "no-store" })
-          .then(function () {
-            estado.textContent = "Hecho — revisa el diálogo que ha abierto Recordatorios.";
-          })
-          .catch(function () {
-            estado.textContent =
-              "No se pudo contactar con el puente local (127.0.0.1:47850). " +
-              "¿Está instalado y en marcha? Ejecuta bridge/instalar.sh, o usa el enlace manual de abajo.";
-            document.getElementById("manual").style.display = "block";
-          });
       });
     }
   </script>

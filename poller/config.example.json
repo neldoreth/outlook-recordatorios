@@ -1,0 +1,5 @@
+{
+  "tenant_id": "PEGA_AQUI_EL_ID_DE_DIRECTORIO_TENANT",
+  "client_id": "PEGA_AQUI_EL_ID_DE_APLICACION_CLIENTE",
+  "cuenta": "tu.correo@tudominio.com"
+}
