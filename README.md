@@ -126,10 +126,20 @@ Al principio de `recordatorio.applescript`:
 
 | Propiedad     | Qué hace                                                          |
 |---------------|--------------------------------------------------------------------|
-| `nombreLista` | Lista de Recordatorios de destino. Si no existe, usa la de por defecto. |
+| `nombreLista` | Lista de Recordatorios de destino (actualmente `"Trabajo"`). Si no existe, usa la de por defecto. |
 | `maxNotas`    | Máximo de caracteres del cuerpo copiados a las notas.              |
 
 Tras editarlo, vuelve a ejecutar `./build.sh`.
+
+### Límite: no se puede elegir la sección/columna dentro de una lista
+
+Si usas la vista de tablero de Recordatorios (columnas tipo "Inbox", "Hoy",
+"Por hacer"...), esas secciones son una organización manual — el
+diccionario de AppleScript de Recordatorios no expone ninguna propiedad
+para asignar una sección al crear un recordatorio. Los que crea esta app
+caen en la columna por defecto de la lista (en la práctica, la última /
+"Otros"), y hay que arrastrarlos a mano a la columna que quieras. No hay
+forma de automatizar ese paso.
 
 En `poller/poller.py`, `INTERVALO_SEGUNDOS` controla cada cuánto se sondea
 Graph (por defecto 5s).

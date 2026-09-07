@@ -11,7 +11,7 @@
 ------------------------------------------------------------------
 -- Lista de Recordatorios donde crear la tarea.
 -- Si no existe, se usa la lista por defecto.
-property nombreLista : "Recordatorios"
+property nombreLista : "Trabajo"
 
 -- Máximo de caracteres del cuerpo que se copian a las notas.
 property maxNotas : 4000
