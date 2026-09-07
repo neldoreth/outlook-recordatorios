@@ -71,6 +71,20 @@
   <script>
     var payloadUrl = "";
 
+    function intentarAbrir(url) {
+      // El WebView de Outlook bloquea la navegación in-place a esquemas
+      // personalizados, así que se prueban varios mecanismos por si alguno
+      // sí se delega al sistema operativo.
+      try {
+        var ventana = window.open(url, "_blank");
+        if (!ventana) {
+          window.location.href = url;
+        }
+      } catch (e) {
+        window.location.href = url;
+      }
+    }
+
     Office.onReady(function () {
       var item = Office.context.mailbox.item;
       document.getElementById("asunto").textContent = item.subject || "(sin asunto)";
@@ -119,7 +133,7 @@
         document.getElementById("manual").style.display = "block";
         estado.textContent = "Abriendo Recordatorios…";
 
-        window.location.href = payloadUrl;
+        intentarAbrir(payloadUrl);
 
         setTimeout(function () {
           estado.textContent =
