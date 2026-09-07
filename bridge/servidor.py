@@ -24,6 +24,17 @@ class Handler(BaseHTTPRequestHandler):
 
     def _cors(self):
         self.send_header("Access-Control-Allow-Origin", ORIGEN_PERMITIDO)
+        # Requerido por la comprobación de acceso a red local/privada de
+        # WebKit y Chromium al saltar de un origen público (GitHub Pages) a
+        # una dirección de loopback, incluso en peticiones "simples".
+        self.send_header("Access-Control-Allow-Private-Network", "true")
+
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self._cors()
+        self.send_header("Access-Control-Allow-Methods", "GET")
+        self.send_header("Access-Control-Allow-Headers", "*")
+        self.end_headers()
 
     def do_GET(self):
         partes = urlsplit(self.path)
