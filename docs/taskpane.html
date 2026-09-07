@@ -84,18 +84,43 @@
       boton.disabled = true;
       estado.textContent = "Etiquetando el correo…";
 
-      item.categories.addAsync([CATEGORIA], function (result) {
+      var respondido = false;
+      var avisoTimeout = setTimeout(function () {
+        if (respondido) return;
+        respondido = true;
         boton.disabled = false;
-        if (result.status === Office.AsyncResultStatus.Succeeded) {
-          estado.textContent =
-            "Hecho. En unos segundos el proceso local creará el recordatorio " +
-            "(revisa Recordatorios en tu Mac).";
-        } else {
-          estado.textContent =
-            "No se pudo etiquetar el correo: " +
-            (result.error ? result.error.message : "error desconocido");
+        estado.textContent =
+          "La llamada no respondió en 8s (categories.addAsync no ha vuelto). " +
+          "Puede que esta versión de Outlook no soporte etiquetar correos desde un add-in.";
+      }, 8000);
+
+      try {
+        if (!item.categories || typeof item.categories.addAsync !== "function") {
+          throw new Error("item.categories.addAsync no existe en este host");
         }
-      });
+        item.categories.addAsync([CATEGORIA], function (result) {
+          if (respondido) return;
+          respondido = true;
+          clearTimeout(avisoTimeout);
+          boton.disabled = false;
+          if (result.status === Office.AsyncResultStatus.Succeeded) {
+            estado.textContent =
+              "Hecho. En unos segundos el proceso local creará el recordatorio " +
+              "(revisa Recordatorios en tu Mac).";
+          } else {
+            estado.textContent =
+              "No se pudo etiquetar el correo: " +
+              (result.error ? (result.error.message + " (código " + result.error.code + ")") : "error desconocido");
+          }
+        });
+      } catch (e) {
+        if (!respondido) {
+          respondido = true;
+          clearTimeout(avisoTimeout);
+          boton.disabled = false;
+          estado.textContent = "Error al llamar a categories.addAsync: " + e.message;
+        }
+      }
     }
   </script>
 </body>
