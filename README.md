@@ -104,8 +104,9 @@ poco fiable según la configuración del tenant:
 2. Tipo: complemento de Office → proporcionar enlace al manifiesto:
    `https://neldoreth.github.io/outlook-recordatorios/manifest.xml`
 3. Usuarios: **Solo yo**.
-4. Acepta el permiso solicitado (`ReadWriteItem`: leer y etiquetar el correo
-   abierto) y finaliza.
+4. Acepta el permiso solicitado (`ReadWriteMailbox` — el nivel más alto de
+   Office.js; lo exige la propia API de categorías, que Microsoft trata como
+   dato de buzón, no solo del correo) y finaliza.
 
 Puede tardar desde minutos hasta un par de horas en aparecer en el cliente,
 bajo "Gestionado por el administrador".
@@ -149,8 +150,10 @@ se ve, cierra y vuelve a abrir el panel.
 
 ## Notas de seguridad
 
-- El add-in pide `ReadWriteItem`: puede leer el correo abierto y ponerle
-  categorías, nada más (no envía correo, no toca otros mensajes).
+- El add-in pide `ReadWriteMailbox`, el nivel más alto de Office.js — más
+  amplio de lo que el add-in usa en la práctica (solo lee el correo abierto y
+  le pone una categoría), pero es el mínimo que exige la propia API de
+  categorías. No hay un nivel intermedio disponible.
 - El poller pide `Mail.ReadWrite` de Graph (con consentimiento de admin),
   acotado a lo necesario para leer el cuerpo/asunto y quitar la categoría
   tras procesar. El token vive en el Llavero, no en un archivo plano.
