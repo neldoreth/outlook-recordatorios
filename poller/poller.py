@@ -69,7 +69,7 @@ def post_form(url, datos):
     peticion = urllib.request.Request(url, data=cuerpo, method="POST")
     peticion.add_header("Content-Type", "application/x-www-form-urlencoded")
     try:
-        with urllib.request.urlopen(peticion) as resp:
+        with urllib.request.urlopen(peticion, timeout=20) as resp:
             return json.loads(resp.read().decode())
     except urllib.error.HTTPError as e:
         return json.loads(e.read().decode())
@@ -138,7 +138,7 @@ def graph_get(access_token, url):
     peticion.add_header("Authorization", f"Bearer {access_token}")
     peticion.add_header("ConsistencyLevel", "eventual")
     peticion.add_header("Prefer", 'outlook.body-content-type="text"')
-    with urllib.request.urlopen(peticion) as resp:
+    with urllib.request.urlopen(peticion, timeout=20) as resp:
         return json.loads(resp.read().decode())
 
 
@@ -147,7 +147,7 @@ def graph_patch(access_token, url, cuerpo):
     peticion = urllib.request.Request(url, data=datos, method="PATCH")
     peticion.add_header("Authorization", f"Bearer {access_token}")
     peticion.add_header("Content-Type", "application/json")
-    urllib.request.urlopen(peticion)
+    urllib.request.urlopen(peticion, timeout=20)
 
 
 def mensajes_pendientes(access_token):
